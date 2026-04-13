@@ -1,0 +1,2 @@
+# script
+đéo có gì
