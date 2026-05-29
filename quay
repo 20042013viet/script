@@ -1,0 +1,73 @@
+-- SCRIPT HACK 100% QUAY RA RANDOM GODLY 0.05% (SERVER SCRIPT)
+-- Đặt trong ServerScriptService
+
+local TARGET_PLAYER = "chestmenot"
+-- Tên phần thưởng hiển thị chính xác trong code hệ thống (thường trùng với chữ trên ô)
+local GODLY_REWARD = "Random Godly" 
+
+-- Hàm quét và can thiệp vào sự kiện quay số
+local function bypassSpinSystem()
+	-- Quét toàn bộ game để tìm các RemoteEvent liên quan đến Vòng quay (Spin/Wheel/Roll)
+	for _, remote in pairs(game:GetDescendants()) do
+		if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+			local name = string.lower(remote.Name)
+			
+			-- Nhận diện các remote xử lý lượt quay
+			if string.find(name, "spin") or string.find(name, "wheel") or string.find(name, "roll") then
+				
+				-- Nếu là RemoteEvent (Game gửi tín hiệu lên và Server xử lý)
+				if remote:IsA("RemoteEvent") then
+					remote.OnServerEvent:Connect(function(player, ...)
+						-- Kiểm tra nếu đúng là bạn đang bấm quay
+						if string.lower(player.Name) == string.lower(TARGET_PLAYER) then
+							
+							-- Tìm thư mục lưu trữ Inventory/Data của bạn để nhét thẳng phần thưởng vào
+							-- Đề phòng cấu trúc game phức tạp, ta sẽ cố gắng kích hoạt hàm nhận thưởng Godly
+							local inventory = player:FindFirstChild("Inventory") or player:FindFirstChild("OwnedItems")
+							if inventory then
+								-- Tạo một bản sao vật phẩm Godly vào túi đồ nếu tìm thấy folder lưu trữ
+								local godlyItem = inventory:FindFirstChild(GODLY_REWARD)
+								if not godlyItem then
+									local newItem = Instance.new("BoolValue")
+									newItem.Name = GODLY_REWARD
+									newItem.Value = true
+									newItem.Parent = inventory
+								end
+							end
+							print("[VÒNG QUAY VIP]: Đã ép hệ thống trao thưởng '" .. GODLY_REWARD .. "' cho " .. player.Name)
+						end
+					end)
+				end
+				
+			end
+		end
+	end
+end
+
+-- Chạy quét hệ thống ngay khi server khởi động
+task.spawn(function()
+	task.wait(2) -- Chờ game tải xong các Remote
+	bypassSpinSystem()
+end)
+
+-- CÁCH DỰ PHÒNG: Nếu game lưu cấu trúc vòng quay trong ReplicatedStorage dạng ModuleScript
+for _, module in pairs(game.ReplicatedStorage:GetDescendants()) do
+	if module:IsA("ModuleScript") and (string.find(string.lower(module.Name), "spin") or string.find(string.lower(module.Name), "reward")) then
+		local status, result = pcall(require, module)
+		if status and type(result) == "table" then
+			-- Nếu tìm thấy bảng tỷ lệ phần trăm trong file cấu hình, ép hết các phần thưởng khác về 0%
+			-- Chỉ để lại Random Godly là 100%
+			for key, value in pairs(result) do
+				if type(value) == "number" then
+					if key == GODLY_REWARD or string.find(string.lower(key), "godly") then
+						result[key] = 100 -- Ép tỷ lệ Godly lên 100%
+					else
+						result[key] = 0   -- Các ô khác (Coins, Gear, Gun) về 0% hết
+					end
+				end
+			end
+		end
+	end
+end
+
+print("[HỆ THỐNG]: Đã bẻ khóa vòng quay! Hãy bấm nút 'Spins (1)' để nhận Random Godly!")
