@@ -1,36 +1,28 @@
--- SCRIPT KHÓA CỨNG GIVE TIỀN THEO USERID CHO CHESTMENOT
--- Đặt trong ServerScriptService
+-- LOCAL SCRIPT: NHẢY VÔ HẠN + TỰ CỘNG 1E36 TIỀN TRỰC TIẾP
+-- Đặt trong StarterPlayerScripts hoặc StarterGui
 
-local GIVE_AMOUNT = 1e36 
-local CURRENCY_NAME = "Cash" 
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
 
-game.Players.PlayerAdded:Connect(function(player)
-	-- KIỂM TRA BẢO MẬT: Trùng tên HOẶC trùng ID máy chủ test (UserId <= 0 dành cho Local Server Studio)
-	-- Cách này giúp nhận diện chính xác 100% bạn mà không sợ lỗi viết hoa/thường hay DisplayName
-	if string.lower(player.Name) == "chestmenot" or player.UserId <= 0 then
-		
-		print("[HỆ THỐNG BẢO MẬT]: Đã xác minh chính chủ " .. player.Name .. " (ID: " .. player.UserId .. "). Đang kích hoạt kho tiền...")
-		
-		-- Đợi bảng leaderstats của game khởi tạo xong
-		local leaderstats = player:WaitForChild("leaderstats", 15)
-		if leaderstats then
-			local cashValue = leaderstats:WaitForChild(CURRENCY_NAME, 10)
-			
-			if cashValue then
-				-- Vòng lặp ngầm siêu tốc khóa cứng tiền cho riêng bạn
-				task.spawn(function()
-					while player and player.Parent do
-						if cashValue.Value ~= GIVE_AMOUNT then
-							cashValue.Value = GIVE_AMOUNT
-						end
-						task.wait(0.2) -- Cập nhật liên tục mỗi 0.2 giây để mua sắm tẹt ga không lo hết
-					end
-				end)
-				print("[HỆ THỐNG VIP]: Kích hoạt dòng tiền vô hạn thành công!")
-			end
-		end
-	else
-		-- Người chơi khác (hoặc các clone phá đám) sẽ hoàn toàn bị ngó lơ
-		print("[HỆ THỐNG]: Bỏ qua người chơi " .. player.Name .. ", không có quyền nhận tiền.")
-	end
+local ADD_AMOUNT = 1e36 -- Số tiền cộng thêm mỗi lần nhảy
+
+UserInputService.JumpRequest:Connect(function()
+    -- 1. Thực hiện cú nhảy vô hạn (Code gốc của bạn)
+    if localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        localPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+    
+    -- 2. Tự động lùng cột tiền trong leaderstats để cộng trực tiếp, không qua trung gian
+    if localPlayer then
+        local leaderstats = localPlayer:FindFirstChild("leaderstats")
+        if leaderstats then
+            -- Tìm cột Cash (hoặc tiền tương ứng trong game của bạn)
+            local cashValue = leaderstats:FindFirstChild("Cash") or leaderstats:FindFirstChild("Money")
+            if cashValue then
+                -- Cộng dồn thẳng 1e36 tiền vào giá trị hiện tại
+                cashValue.Value = cashValue.Value + ADD_AMOUNT
+            end
+        end
+    end
 end)
