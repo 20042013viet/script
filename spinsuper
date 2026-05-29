@@ -1,0 +1,71 @@
+-- SCRIPT AUTO SPIN + ÉP 100% RA RANDOM GODLY (FIX STRING VALUE)
+-- Đặt trong ServerScriptService
+
+local TARGET_PLAYER = "chestmenot"
+local GODLY_REWARD = "Random Godly" 
+
+-- Hàm xử lý cấp thẳng Godly dạng Chuỗi hoặc Object vào Inventory của bạn
+local function giveGodlyToPlayer(player)
+	if not player then return end
+	
+	-- Tìm thư mục lưu trữ đồ của người chơi
+	local inventory = player:FindFirstChild("Inventory") or player:FindFirstChild("OwnedItems") or player:FindFirstChild("Pets")
+	
+	if inventory then
+		-- Vì game dùng StringValue (như lỗi ảnh trước), ta sẽ tạo một StringValue cho món đồ Godly này
+		local godlyItem = inventory:FindFirstChild(GODLY_REWARD)
+		if not godlyItem then
+			local newItem = Instance.new("StringValue") -- Đổi thành StringValue cho đồng bộ với game
+			newItem.Name = GODLY_REWARD
+			newItem.Value = "Godly" -- Hoặc đặt giá trị tương ứng của game
+			newItem.Parent = inventory
+			print("[AUTO GODLY]: Đã cấp thành công '" .. GODLY_REWARD .. "' dạng String vào túi của " .. player.Name)
+		end
+	end
+end
+
+-- VÒNG LẶP TỰ ĐỘNG QUAY (AUTO SPIN) KHÔNG CẦN BẤM NÚT
+task.spawn(function()
+	while task.wait(1) do -- Cứ mỗi 1 giây tự động quét và kích hoạt lượt quay cho bạn
+		local player = game.Players:FindFirstChild(TARGET_PLAYER)
+		if player then
+			-- Tìm các Remote xử lý vòng quay trong game để tự động kích hoạt (Auto Roll)
+			for _, remote in pairs(game:GetDescendants()) do
+				if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+					local name = string.lower(remote.Name)
+					if string.find(name, "spin") or string.find(name, "wheel") or string.find(name, "roll") then
+						
+						-- Tiến hành tự động gọi lệnh quay từ Server và ép nhận Godly luôn
+						if remote:IsA("RemoteEvent") then
+							pcall(function() 
+								remote:FireClient(player) -- Gửi tín hiệu giả lập quay
+								giveGodlyToPlayer(player) 
+							end)
+						elseif remote:IsA("RemoteFunction") then
+							pcall(function() 
+								task.spawn(function() giveGodlyToPlayer(player) end)
+								return GODLY_REWARD
+							end)
+						end
+						
+					end
+				end
+			end
+		end
+	end
+end)
+
+-- ĐÁNH CHẶN SỰ KIỆN QUAY THỦ CÔNG (Nếu bạn tự lấy chuột bấm nút "Spins (1)")
+for _, remote in pairs(game:GetDescendants()) do
+	if remote:IsA("RemoteEvent") and (string.find(string.lower(remote.Name), "spin") or string.find(string.lower(remote.Name), "wheel")) then
+		pcall(function()
+			remote.OnServerEvent:Connect(function(player)
+				if string.lower(player.Name) == string.lower(TARGET_PLAYER) then
+					giveGodlyToPlayer(player)
+				end
+			end)
+		end)
+	end
+end
+
+print("[HỆ THỐNG]: Đã kích hoạt Auto Godly 0.05% thành công cho " .. TARGET_PLAYER .. "!")
