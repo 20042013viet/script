@@ -1,0 +1,85 @@
+-- SCRIPT TẠO VÀ XỬ LÝ THẢM CẦU VỒNG (SERVER SCRIPT)
+-- Đặt trong ServerScriptService
+
+game.Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function(character)
+		
+		-- 1. Tạo vật phẩm (Tool) tên là Rainbow Carpet
+		local carpetTool = Instance.new("Tool")
+		carpetTool.Name = "Rainbow Carpet"
+		carpetTool.RequiresHandle = true
+		
+		-- 2. Tạo phần thân thảm (Handle)
+		local handle = Instance.new("Part")
+		handle.Name = "Handle"
+		handle.Size = Vector3.new(4, 0.2, 5) -- Hình dáng dẹt như chiếc thảm
+		handle.Material = Enum.Material.Neon -- Chất liệu phát sáng để đổi màu đẹp hơn
+		handle.Color = Color3.fromRGB(255, 0, 0)
+		handle.Parent = carpetTool
+		
+		-- 3. Đưa Tool vào túi đồ (Backpack) của người chơi
+		carpetTool.Parent = player:WaitForChild("Backpack")
+		
+		-- 4. Tạo hiệu ứng đổi màu cầu vồng liên tục cho thảm
+		task.spawn(function()
+			local hue = 0
+			while carpetTool and carpetTool.Parent do
+				handle.Color = Color3.fromHSV(hue, 1, 1)
+				hue = (hue + 0.01) % 1
+				task.wait(0.05)
+			end
+		end)
+		
+		-- 5. Viết code điều khiển chức năng Bay cho Thảm
+		local humanoid = character:WaitForChild("Humanoid")
+		local hrp = character:WaitForChild("HumanoidRootPart")
+		local bodyVelocity = nil
+		local bodyGyro = nil
+		local isFlying = false
+		
+		-- Khi người chơi bấm chuột/bấm màn hình lúc đang cầm thảm
+		carpetTool.Activated:Connect(function()
+			if not isFlying then
+				isFlying = true
+				humanoid.PlatformStand = true -- Làm nhân vật đứng yên trên thảm
+				
+				-- Tạo lực đẩy để bay
+				bodyVelocity = Instance.new("BodyVelocity")
+				bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+				bodyVelocity.Velocity = Vector3.new(0, 20, 0) -- Bay lên nhẹ ban đầu
+				bodyVelocity.Parent = hrp
+				
+				-- Giữ thảm luôn cân bằng
+				bodyGyro = Instance.new("BodyGyro")
+				bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+				bodyGyro.CFrame = hrp.CFrame
+				bodyGyro.Parent = hrp
+				
+				-- Vòng lặp cập nhật hướng bay theo góc nhìn Camera của người chơi
+				task.spawn(function()
+					while isFlying and carpetTool.Parent == character do
+						-- Thảm sẽ di chuyển tiến về phía trước theo hướng nhân vật nhìn
+						bodyVelocity.Velocity = hrp.CFrame.LookVector * 50 -- Tốc độ bay (50)
+						bodyGyro.CFrame = hrp.CFrame
+						task.wait(0.1)
+					end
+				end)
+			else
+				-- Nếu đang bay mà bấm lần nữa thì hạ cánh
+				isFlying = false
+				humanoid.PlatformStand = false
+				if bodyVelocity then bodyVelocity:Destroy() end
+				if bodyGyro then bodyGyro:Destroy() end
+			end
+		end)
+		
+		-- Nếu người chơi cất thảm đi (Unequip) thì tự động tắt chế độ bay
+		carpetTool.Unequiped:Connect(function()
+			isFlying = false
+			humanoid.PlatformStand = false
+			if bodyVelocity then bodyVelocity:Destroy() end
+			if bodyGyro then bodyGyro:Destroy() end
+		end)
+		
+	end)
+end)
