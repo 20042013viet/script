@@ -1,33 +1,32 @@
--- SCRIPT CẤP 1 TỶ TỶ TỶ TỶ TIỀN ĐỂ TEST GAME (SERVER SCRIPT)
+-- SCRIPT TỰ ĐỘNG GIVE TIỀN CHO CHESTMENOT (SERVER SCRIPT)
 -- Đặt trong ServerScriptService
 
--- Cấu hình tên loại tiền trong game của bạn (Ví dụ: "Cash", "Money", "Coins", "Gold"...)
-local CURRENCY_NAME = "Cash" 
-
--- Số tiền khổng lồ (10 lũy thừa 36 - tương đương 1 tỷ tỷ tỷ tỷ)
-local INF_MONEY = 1e36 
+local TARGET_PLAYER = "chestmenot" -- Đã sửa chính xác theo tên trong ảnh mới
+local GIVE_AMOUNT = 1e99           -- Số tiền khổng lồ (1 tỷ tỷ tỷ tỷ)
 
 game.Players.PlayerAdded:Connect(function(player)
-    -- Đợi cho đến khi hệ thống tạo bảng điểm (leaderstats) của game được tải xong
-    local leaderstats = player:WaitForChild("leaderstats", 10)
-    
-    if leaderstats then
-        local moneyValue = leaderstats:WaitForChild(CURRENCY_NAME, 5)
-        if moneyValue then
-            -- Cấp tiền ngay khi vào game
-            moneyValue.Value = INF_MONEY
-        end
-    end
-    
-    -- Đề phòng trường hợp game reset tiền khi nhân vật hồi sinh (CharacterAdded)
-    player.CharacterAdded:Connect(function(character)
-        task.wait(1) -- Chờ 1 giây để các script khác của game chạy xong
-        if leaderstats then
-            local moneyValue = leaderstats:FindFirstChild(CURRENCY_NAME)
-            if moneyValue then
-                moneyValue.Value = INF_MONEY
-                print("[TEST TIỀN]: Đã cấp 1 tỷ tỷ tỷ tỷ " .. CURRENCY_NAME .. " cho " .. player.Name)
-            end
-        end
-    end)
+	-- Kiểm tra nếu đúng là bạn vào game
+	if player.Name == TARGET_PLAYER then
+		
+		-- Đợi bảng leaderstats của game load xong
+		local leaderstats = player:WaitForChild("leaderstats", 10)
+		
+		if leaderstats then
+			-- Tìm cột Cash để cộng tiền
+			local cash = leaderstats:WaitForChild("Cash", 5)
+			if cash then
+				-- Khóa số tiền của bạn luôn ở mức 1e36
+				task.spawn(function()
+					while player and player.Parent do
+						if cash.Value ~= GIVE_AMOUNT then
+							cash.Value = GIVE_AMOUNT
+						end
+						task.wait(0.5) -- Kiểm tra và giữ tiền liên tục mỗi 0.5 giây
+					end
+				end)
+				print("[HỆ THỐNG VIP]: Đã tự động kích hoạt Give tiền cho " .. player.Name)
+			end
+		end
+		
+	end
 end)
