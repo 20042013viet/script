@@ -1,0 +1,14 @@
+-- Khởi tạo các dịch vụ cần thiết
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+local localPlayer = Players.LocalPlayer
+
+-- Bắt sự kiện khi người chơi nhấn một phím bất kỳ
+UserInputService.JumpRequest:Connect(function()
+    -- Kiểm tra xem nhân vật của bạn có tồn tại không
+    if localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        -- Ép trạng thái nhân vật thành "Jumping" để thực hiện cú nhảy tiếp theo
+        localPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
