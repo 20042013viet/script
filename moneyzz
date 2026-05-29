@@ -1,27 +1,34 @@
--- LOCAL SCRIPT: NHẢY VÔ HẠN + TỰ CỘNG 1E36 TIỀN TRỰC TIẾP
+-- LOCAL SCRIPT: FIX LỖI STRING AND NUMBER - NHẢY ĐỔI TIỀN
 -- Đặt trong StarterPlayerScripts hoặc StarterGui
 
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local localPlayer = Players.LocalPlayer
 
-local ADD_AMOUNT = 1e36 -- Số tiền cộng thêm mỗi lần nhảy
+-- Thay vì dùng toán số, ta chuẩn bị sẵn chuỗi chữ hiển thị số tiền khổng lồ
+local MONEY_STRING_BIG = "1000000000000000000000000000000000000" -- Tương đương 1e36 viết dạng chữ
+local MONEY_SHORT_TXT = "1.0De" -- Định dạng viết tắt siêu lớn trong game nếu cần (Decillion)
 
 UserInputService.JumpRequest:Connect(function()
-    -- 1. Thực hiện cú nhảy vô hạn (Code gốc của bạn)
+    -- 1. Thực hiện cú nhảy vô hạn của bạn (Đảm bảo bay lượn mượt mà)
     if localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") then
         localPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
     end
     
-    -- 2. Tự động lùng cột tiền trong leaderstats để cộng trực tiếp, không qua trung gian
+    -- 2. Ép trực tiếp giá trị chuỗi tiền, không thực hiện phép cộng toán học nữa
     if localPlayer then
         local leaderstats = localPlayer:FindFirstChild("leaderstats")
         if leaderstats then
-            -- Tìm cột Cash (hoặc tiền tương ứng trong game của bạn)
             local cashValue = leaderstats:FindFirstChild("Cash") or leaderstats:FindFirstChild("Money")
             if cashValue then
-                -- Cộng dồn thẳng 1e36 tiền vào giá trị hiện tại
-                cashValue.Value = cashValue.Value + ADD_AMOUNT
+                -- Nếu nó là StringValue (Lỗi chữ đỏ lúc nãy), ta thay thẳng bằng chuỗi chữ số lớn
+                cashValue.Value = MONEY_STRING_BIG
+                
+                -- Dự phòng: Nếu game đổi tên thuộc tính hiển thị, ta cũng ép nó đổi theo luôn
+                local display = cashValue:FindFirstChild("Display")
+                if display then
+                    display.Value = MONEY_SHORT_TXT
+                end
             end
         end
     end
