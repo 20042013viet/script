@@ -1,14 +1,21 @@
-local function giveRainbowSlap(player)
-	local backpack = player:WaitForChild("Backpack")
-	
-	-- Tạo Tool Rainbow Slap
-	local slapTool = Instance.new("Tool")
-	slapTool.Name = "Rainbow Slap"
-	
-	local handle = Instance.new("Part")
-	handle.Name = "Handle"
-	handle.Size = Vector3.new(1.2, 1.2, 1.2)
-	handle.Material = Enum.Material.Neon
-	handle.Parent = slapTool
-	
-	slapTool.Parent = backpack
+-- SCRIPT KHÔNG MẤT MÁU TUYỆT ĐỐI (SERVER SCRIPT)
+-- Đặt trong ServerScriptService
+
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        
+        -- Khóa lượng máu luôn ở mức tối đa (Mặc định là 100)
+        humanoid.MaxHealth = 100
+        humanoid.Health = 100
+        
+        -- Khóa thuộc tính không cho phép thay đổi máu (Bypass mọi loại sát thương)
+        humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+            if humanoid.Health < humanoid.MaxHealth then
+                humanoid.Health = humanoid.MaxHealth
+            end
+        end)
+        
+        print("[TEST KHÔNG MẤT MÁU]: Đã bảo vệ nhân vật " .. player.Name)
+    end)
+end)
