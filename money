@@ -1,0 +1,33 @@
+-- SCRIPT CẤP 1 TỶ TỶ TỶ TỶ TIỀN ĐỂ TEST GAME (SERVER SCRIPT)
+-- Đặt trong ServerScriptService
+
+-- Cấu hình tên loại tiền trong game của bạn (Ví dụ: "Cash", "Money", "Coins", "Gold"...)
+local CURRENCY_NAME = "Cash" 
+
+-- Số tiền khổng lồ (10 lũy thừa 36 - tương đương 1 tỷ tỷ tỷ tỷ)
+local INF_MONEY = 1e36 
+
+game.Players.PlayerAdded:Connect(function(player)
+    -- Đợi cho đến khi hệ thống tạo bảng điểm (leaderstats) của game được tải xong
+    local leaderstats = player:WaitForChild("leaderstats", 10)
+    
+    if leaderstats then
+        local moneyValue = leaderstats:WaitForChild(CURRENCY_NAME, 5)
+        if moneyValue then
+            -- Cấp tiền ngay khi vào game
+            moneyValue.Value = INF_MONEY
+        end
+    end
+    
+    -- Đề phòng trường hợp game reset tiền khi nhân vật hồi sinh (CharacterAdded)
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1) -- Chờ 1 giây để các script khác của game chạy xong
+        if leaderstats then
+            local moneyValue = leaderstats:FindFirstChild(CURRENCY_NAME)
+            if moneyValue then
+                moneyValue.Value = INF_MONEY
+                print("[TEST TIỀN]: Đã cấp 1 tỷ tỷ tỷ tỷ " .. CURRENCY_NAME .. " cho " .. player.Name)
+            end
+        end
+    end)
+end)
