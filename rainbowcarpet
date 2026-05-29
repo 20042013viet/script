@@ -1,26 +1,34 @@
--- SCRIPT LẤY VẬT PHẨM TỔNG HỢP (SERVER SCRIPT)
+-- SCRIPT CHỈ TẠO THẢM CẦU VỒNG ĐỔI MÀU (ĐÃ SỬA LỖI)
 -- Đặt trong ServerScriptService
 
--- Hàm tự động tạo vật phẩm và đưa vào túi đồ người chơi
-local function giveItem(player, itemName, itemColor, itemSize)
-    local backpack = player:WaitForChild("Backpack")
-    
-    -- 1. Tạo Tool và đặt tên theo ý muốn
-    local tool = Instance.new("Tool")
-    tool.Name = itemName
-    
-    -- 2. Tạo phần tay cầm (Handle) để nhân vật cầm được
-    local handle = Instance.new("Part")
-    handle.Name = "Handle"
-    handle.Size = itemSize or Vector3.new(1, 1, 1) -- Kích thước mặc định
-    handle.Color = itemColor or Color3.fromRGB(255, 255, 255) -- Màu sắc mặc định
-    handle.Material = Enum.Material.Neon -- Chất liệu phát sáng để dễ nhận biết khi test
-    handle.Parent = tool
-    
-    -- 3. Đưa vật phẩm vào túi đồ
-    tool.Parent = backpack
-end
-
--- Kích hoạt khi có người chơi tham gia game
 game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
+        
+        -- 1. Tạo Tool và đặt tên là Rainbow Carpet
+        local carpet = Instance.new("Tool")
+        carpet.Name = "Rainbow Carpet"
+        
+        -- 2. Tạo phần thân thảm (Handle) để nhân vật cầm được
+        local handle = Instance.new("Part")
+        handle.Name = "Handle"
+        handle.Size = Vector3.new(4, 0.2, 5) -- Dẹt như chiếc thảm
+        handle.Material = Enum.Material.Neon -- Chất liệu phát sáng để đổi màu đẹp nhất
+        handle.Parent = carpet
+        
+        -- 3. Đưa thẳng thảm vào túi đồ (Backpack) của người chơi
+        carpet.Parent = player:WaitForChild("Backpack")
+        
+        -- 4. Vòng lặp đổi màu cầu vồng liên tục cho thảm
+        task.spawn(function()
+            local hue = 0
+            while carpet and carpet.Parent do
+                if handle and handle.Parent then
+                    handle.Color = Color3.fromHSV(hue, 1, 1)
+                end
+                hue = (hue + 0.01) % 1
+                task.wait(0.05)
+            end
+        end)
+        
+    end)
+end)
