@@ -1,34 +1,14 @@
--- SCRIPT CHỈ TẠO THẢM CẦU VỒNG ĐỔI MÀU (ĐÃ SỬA LỖI)
--- Đặt trong ServerScriptService
-
-game.Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        
-        -- 1. Tạo Tool và đặt tên là Rainbow Carpet
-        local carpet = Instance.new("Tool")
-        carpet.Name = "Rainbow Carpet"
-        
-        -- 2. Tạo phần thân thảm (Handle) để nhân vật cầm được
-        local handle = Instance.new("Part")
-        handle.Name = "Handle"
-        handle.Size = Vector3.new(4, 0.2, 5) -- Dẹt như chiếc thảm
-        handle.Material = Enum.Material.Neon -- Chất liệu phát sáng để đổi màu đẹp nhất
-        handle.Parent = carpet
-        
-        -- 3. Đưa thẳng thảm vào túi đồ (Backpack) của người chơi
-        carpet.Parent = player:WaitForChild("Backpack")
-        
-        -- 4. Vòng lặp đổi màu cầu vồng liên tục cho thảm
-        task.spawn(function()
-            local hue = 0
-            while carpet and carpet.Parent do
-                if handle and handle.Parent then
-                    handle.Color = Color3.fromHSV(hue, 1, 1)
-                end
-                hue = (hue + 0.01) % 1
-                task.wait(0.05)
-            end
-        end)
-        
-    end)
-end)
+local function giveRainbowSlap(player)
+	local backpack = player:WaitForChild("Backpack")
+	
+	-- Tạo Tool Rainbow Slap
+	local slapTool = Instance.new("Tool")
+	slapTool.Name = "Rainbow Slap"
+	
+	local handle = Instance.new("Part")
+	handle.Name = "Handle"
+	handle.Size = Vector3.new(1.2, 1.2, 1.2)
+	handle.Material = Enum.Material.Neon
+	handle.Parent = slapTool
+	
+	slapTool.Parent = backpack
