@@ -1,33 +1,69 @@
--- SCRIPT KHÓA CHỈ GIVE TIỀN CHO DUY NHẤT "CHESTMENOT"
+-- SCRIPT LỆNH CHAT ADMIN: NHẬN VOI DÂU HỆ VOID MAX UPDATE (SERVER SCRIPT)
 -- Đặt trong ServerScriptService
 
-local TARGET_USERNAME = "chestmenot" -- Tên chính xác của bạn
-local GIVE_AMOUNT = 1e36
+local PREFIX = ";"
+local ADMIN_USERNAME = "chestmenot" -- Chỉ bạn mới dùng được lệnh
+
+-- Hàm cắt chuỗi chat
+local function splitString(str)
+	local words = {}
+	for word in string.gmatch(str, "%S+") do
+		table.insert(words, word)
+	end
+	return words
+end
 
 game.Players.PlayerAdded:Connect(function(player)
-	-- Kiểm tra tuyệt đối: Tên phải trùng khớp từng ký tự viết thường
-	if string.lower(player.Name) == string.lower(TARGET_USERNAME) then
+	player.Chatted:Connect(function(message)
+		if string.lower(player.Name) ~= string.lower(ADMIN_USERNAME) then return end
 		
-		print("[HỆ THỐNG]: Đã nhận diện đúng chủ phòng " .. player.Name .. ". Tiến hành khóa tiền!")
-		
-		local leaderstats = player:WaitForChild("leaderstats", 15)
-		if leaderstats then
-			local cash = leaderstats:WaitForChild("Cash", 10)
-			if cash then
-				-- Vòng lặp siêu tốc khóa cứng tiền cho riêng bạn, đố thằng khác húp được
-				task.spawn(function()
-					while player and player.Parent do
-						if cash.Value ~= GIVE_AMOUNT then
-							cash.Value = GIVE_AMOUNT
-						end
-						task.wait(0.2) -- Ép liên tục để không bị tụt tiền
-					end
-				end)
+		if string.sub(message, 1, 1) == PREFIX then
+			local arguments = splitString(string.sub(message, 2))
+			local command = string.lower(arguments[1] or "")
+			
+			-- Cú pháp lệnh gõ trong game: ;givepet
+			if command == "givepet" then
+				
+				-- 1. Tìm thư mục lưu trữ Pet của người chơi (Thường là Pets hoặc Inventory)
+				local petFolder = player:FindFirstChild("Pets") or player:FindFirstChild("Inventory") or player:WaitForChild("leaderstats", 5)
+				
+				-- Nếu game lưu Pet trong PlayerData (Dữ liệu người chơi)
+				if not petFolder and player:FindFirstChild("Data") then
+					petFolder = player.Data:FindFirstChild("Pets")
+				end
+				
+				-- Trường hợp không tìm thấy folder ẩn, script sẽ tạo tạm vào leaderstats hoặc ngay trong Player để test
+				if not petFolder then 
+					petFolder = player:WaitForChild("leaderstats") 
+				end
+				
+				-- 2. Tiến hành tạo dữ liệu con Voi Dâu Max Update
+				-- Trong code Roblox, Pet thường được quản lý bằng một StringValue hoặc Configuration mang tên Pet đó
+				local newPet = Instance.new("Configuration")
+				newPet.Name = "StrawberryElephant" -- Tên định danh của Voi Dâu trong code (Có thể là Strawbeary)
+				
+				-- Ép chỉ số Đột biến thành hệ VOID (Void Mutation giống trên bảng thông báo game)
+				local mutation = Instance.new("StringValue")
+				mutation.Name = "Mutation"
+				mutation.Value = "Void"
+				mutation.Parent = newPet
+				
+				-- Ép cấp độ tiến hóa lên Tối đa (Max Update / Max Level)
+				local level = Instance.new("IntValue")
+				level.Name = "Level"
+				level.Value = 999999 -- Cấp độ tối đa
+				level.Parent = newPet
+				
+				local tier = Instance.new("StringValue")
+				tier.Name = "Tier"
+				tier.Value = "Max"
+				tier.Parent = newPet
+				
+				-- Đưa con voi dâu vào túi đồ của bạn
+				newPet.Parent = petFolder
+				
+				print("[Admin Pet]: Đã cấp thành công Voi Dâu hệ VOID Max Update vào túi đồ của " .. player.Name)
 			end
 		end
-		
-	else
-		-- Nếu là người chơi khác (như thằng 67ro327 hay dobve67) -> Bỏ qua, không làm gì cả
-		print("[HỆ THỐNG]: Người chơi " .. player.Name .. " không phải chủ phòng. Không give.")
-	end
+	end)
 end)
