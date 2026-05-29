@@ -1,32 +1,33 @@
--- SCRIPT TỰ ĐỘNG GIVE TIỀN CHO CHESTMENOT (SERVER SCRIPT)
+-- SCRIPT KHÓA CHỈ GIVE TIỀN CHO DUY NHẤT "CHESTMENOT"
 -- Đặt trong ServerScriptService
 
-local TARGET_PLAYER = "chestmenot" -- Đã sửa chính xác theo tên trong ảnh mới
-local GIVE_AMOUNT = 1e99           -- Số tiền khổng lồ (1 tỷ tỷ tỷ tỷ)
+local TARGET_USERNAME = "chestmenot" -- Tên chính xác của bạn
+local GIVE_AMOUNT = 1e36
 
 game.Players.PlayerAdded:Connect(function(player)
-	-- Kiểm tra nếu đúng là bạn vào game
-	if player.Name == TARGET_PLAYER then
+	-- Kiểm tra tuyệt đối: Tên phải trùng khớp từng ký tự viết thường
+	if string.lower(player.Name) == string.lower(TARGET_USERNAME) then
 		
-		-- Đợi bảng leaderstats của game load xong
-		local leaderstats = player:WaitForChild("leaderstats", 10)
+		print("[HỆ THỐNG]: Đã nhận diện đúng chủ phòng " .. player.Name .. ". Tiến hành khóa tiền!")
 		
+		local leaderstats = player:WaitForChild("leaderstats", 15)
 		if leaderstats then
-			-- Tìm cột Cash để cộng tiền
-			local cash = leaderstats:WaitForChild("Cash", 5)
+			local cash = leaderstats:WaitForChild("Cash", 10)
 			if cash then
-				-- Khóa số tiền của bạn luôn ở mức 1e36
+				-- Vòng lặp siêu tốc khóa cứng tiền cho riêng bạn, đố thằng khác húp được
 				task.spawn(function()
 					while player and player.Parent do
 						if cash.Value ~= GIVE_AMOUNT then
 							cash.Value = GIVE_AMOUNT
 						end
-						task.wait(0.5) -- Kiểm tra và giữ tiền liên tục mỗi 0.5 giây
+						task.wait(0.2) -- Ép liên tục để không bị tụt tiền
 					end
 				end)
-				print("[HỆ THỐNG VIP]: Đã tự động kích hoạt Give tiền cho " .. player.Name)
 			end
 		end
 		
+	else
+		-- Nếu là người chơi khác (như thằng 67ro327 hay dobve67) -> Bỏ qua, không làm gì cả
+		print("[HỆ THỐNG]: Người chơi " .. player.Name .. " không phải chủ phòng. Không give.")
 	end
 end)
