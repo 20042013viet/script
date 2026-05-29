@@ -1,21 +1,36 @@
--- SCRIPT KHÔNG MẤT MÁU TUYỆT ĐỐI (SERVER SCRIPT)
+-- SCRIPT BẤT TỬ NÂNG CAO - BYPASS CUSTOM DAMAGE
 -- Đặt trong ServerScriptService
 
 game.Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         local humanoid = character:WaitForChild("Humanoid")
+        local hrp = character:WaitForChild("HumanoidRootPart")
         
-        -- Khóa lượng máu luôn ở mức tối đa (Mặc định là 100)
-        humanoid.MaxHealth = 100
-        humanoid.Health = 100
+        -- 1. Tạo vòng bảo vệ ForceField vĩnh cửu (Chống mọi nguồn sát thương cơ bản)
+        local ff = Instance.new("ForceField")
+        ff.Visible = false -- Ẩn vòng tròn bên ngoài đi cho đẹp nhân vật
+        ff.Parent = character
         
-        -- Khóa thuộc tính không cho phép thay đổi máu (Bypass mọi loại sát thương)
-        humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-            if humanoid.Health < humanoid.MaxHealth then
-                humanoid.Health = humanoid.MaxHealth
+        -- 2. Vòng lặp siêu tốc (Heartbeat) để khóa máu và hồi sinh ForceField nếu bị xóa
+        local runService = game:GetService("RunService")
+        local connection
+        
+        connection = runService.Heartbeat:Connect(function()
+            -- Nếu nhân vật hoặc humanoid không còn tồn tại, tắt vòng lặp này để tránh lag
+            if not character or not character.Parent or not humanoid or humanoid.Health <= 0 then
+                connection:Disconnect()
+                return
+            end
+            
+            -- Ép máu luôn luôn bằng máu tối đa ở mỗi khung hình máy chủ
+            humanoid.Health = humanoid.MaxHealth
+            
+            -- Đảm bảo ForceField luôn luôn tồn tại (Đề phòng có script xóa ff)
+            if not character:FindFirstChildOfClass("ForceField") then
+                local newFF = Instance.new("ForceField")
+                newFF.Visible = false
+                newFF.Parent = character
             end
         end)
-        
-        print("[TEST KHÔNG MẤT MÁU]: Đã bảo vệ nhân vật " .. player.Name)
     end)
 end)
