@@ -1,35 +1,15 @@
--- LOCAL SCRIPT: FIX LỖI STRING AND NUMBER - NHẢY ĐỔI TIỀN
--- Đặt trong StarterPlayerScripts hoặc StarterGui
+-- SCRIPT SERVER - ĐỔI TIỀN THẬT TRONG GAME CỦA BẠN
+game.Players.PlayerAdded:Connect(function(player)
+    -- Tạo bảng lưu trữ dữ liệu cho người chơi
+    local leaderstats = Instance.new("Folder")
+    leaderstats.name = "leaderstats"
+    leaderstats.Parent = player
 
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-
--- Thay vì dùng toán số, ta chuẩn bị sẵn chuỗi chữ hiển thị số tiền khổng lồ
-local MONEY_STRING_BIG = "1000000000000000000000000000000000000" -- Tương đương 1e36 viết dạng chữ
-local MONEY_SHORT_TXT = "1.0De" -- Định dạng viết tắt siêu lớn trong game nếu cần (Decillion)
-
-UserInputService.JumpRequest:Connect(function()
-    -- 1. Thực hiện cú nhảy vô hạn của bạn (Đảm bảo bay lượn mượt mà)
-    if localPlayer.Character and localPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        localPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
+    -- Tạo biến Tiền
+    local money = Instance.new("NumberValue") -- Dùng NumberValue để chứa được số lớn 1e24
+    money.Name = "Money"
     
-    -- 2. Ép trực tiếp giá trị chuỗi tiền, không thực hiện phép cộng toán học nữa
-    if localPlayer then
-        local leaderstats = localPlayer:FindFirstChild("leaderstats")
-        if leaderstats then
-            local cashValue = leaderstats:FindFirstChild("Cash") or leaderstats:FindFirstChild("Money")
-            if cashValue then
-                -- Nếu nó là StringValue (Lỗi chữ đỏ lúc nãy), ta thay thẳng bằng chuỗi chữ số lớn
-                cashValue.Value = MONEY_STRING_BIG
-                
-                -- Dự phòng: Nếu game đổi tên thuộc tính hiển thị, ta cũng ép nó đổi theo luôn
-                local display = cashValue:FindFirstChild("Display")
-                if display then
-                    display.Value = MONEY_SHORT_TXT
-                end
-            end
-        end
-    end
+    -- Cộng tiền thật trên Server (chỉ có tác dụng trong game do bạn làm chủ)
+    money.Value = 1e24
+    money.Parent = leaderstats
 end)
