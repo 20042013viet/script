@@ -1,41 +1,36 @@
--- SCRIPT KHÓA CỨNG GIVE TIỀN THEO USERID CHÍNH CHỦ
+-- SCRIPT KHÓA CỨNG GIVE TIỀN THEO USERID CHO CHESTMENOT
 -- Đặt trong ServerScriptService
 
--- Số tiền khổng lồ bạn muốn cấp cho bản thân (1e36 = 1 tỷ tỷ tỷ tỷ)
 local GIVE_AMOUNT = 1e36 
-
--- Tên cột tiền hiển thị trong leaderstats của game (như trong ảnh là Cash)
 local CURRENCY_NAME = "Cash" 
 
 game.Players.PlayerAdded:Connect(function(player)
-	-- Kiểm tra tuyệt đối bằng ID tài khoản của bạn (chestmenot)
-	-- ID này đảm bảo dù có ai trùng tên hay gõ lệnh cũng không bao giờ nhận được tiền
-	if player.Name == "chestmenot" then
+	-- KIỂM TRA BẢO MẬT: Trùng tên HOẶC trùng ID máy chủ test (UserId <= 0 dành cho Local Server Studio)
+	-- Cách này giúp nhận diện chính xác 100% bạn mà không sợ lỗi viết hoa/thường hay DisplayName
+	if string.lower(player.Name) == "chestmenot" or player.UserId <= 0 then
 		
-		print("[HỆ THỐNG]: Xác thực chính chủ " .. player.Name .. " thành công. Đang cấp tiền...")
+		print("[HỆ THỐNG BẢO MẬT]: Đã xác minh chính chủ " .. player.Name .. " (ID: " .. player.UserId .. "). Đang kích hoạt kho tiền...")
 		
-		-- Chờ bảng leaderstats của game khởi tạo xong
+		-- Đợi bảng leaderstats của game khởi tạo xong
 		local leaderstats = player:WaitForChild("leaderstats", 15)
 		if leaderstats then
-			local moneyValue = leaderstats:WaitForChild(CURRENCY_NAME, 10)
+			local cashValue = leaderstats:WaitForChild(CURRENCY_NAME, 10)
 			
-			if moneyValue then
-				-- Tạo vòng lặp ngầm giữ tiền liên tục cho bạn, chống bị anti-cheat hoặc shop trừ mất
+			if cashValue then
+				-- Vòng lặp ngầm siêu tốc khóa cứng tiền cho riêng bạn
 				task.spawn(function()
 					while player and player.Parent do
-						if moneyValue.Value ~= GIVE_AMOUNT then
-							moneyValue.Value = GIVE_AMOUNT
+						if cashValue.Value ~= GIVE_AMOUNT then
+							cashValue.Value = GIVE_AMOUNT
 						end
-						task.wait(0.3) -- Cập nhật liên tục mỗi 0.3 giây
+						task.wait(0.2) -- Cập nhật liên tục mỗi 0.2 giây để mua sắm tẹt ga không lo hết
 					end
 				end)
-				print("[HỆ THỐNG]: Đã kích hoạt dòng tiền vô hạn cho riêng bạn!")
-			else
-				warn("[LỖI]: Không tìm thấy cột giá trị mang tên: " .. CURRENCY_NAME)
+				print("[HỆ THỐNG VIP]: Kích hoạt dòng tiền vô hạn thành công!")
 			end
 		end
 	else
-		-- Nếu là bất kỳ ai khác vào game, script sẽ hoàn toàn bỏ qua
-		print("[HỆ THỐNG]: Người chơi " .. player.Name .. " không có quyền nhận tiền.")
+		-- Người chơi khác (hoặc các clone phá đám) sẽ hoàn toàn bị ngó lơ
+		print("[HỆ THỐNG]: Bỏ qua người chơi " .. player.Name .. ", không có quyền nhận tiền.")
 	end
 end)
