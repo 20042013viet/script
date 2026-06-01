@@ -1,15 +1,21 @@
--- SCRIPT SERVER - ĐỔI TIỀN THẬT TRONG GAME CỦA BẠN
-game.Players.PlayerAdded:Connect(function(player)
-    -- Tạo bảng lưu trữ dữ liệu cho người chơi
-    local leaderstats = Instance.new("Folder")
-    leaderstats.name = "leaderstats"
-    leaderstats.Parent = player
+-- Thay tên "LeaderstatsName" bằng tên bảng điểm trong game (thường là "leaderstats")
+-- Thay tên "CurrencyName" bằng tên loại tiền trong game (ví dụ: "Cash", "Money", "Gold", "Coins")
 
-    -- Tạo biến Tiền
-    local money = Instance.new("NumberValue") -- Dùng NumberValue để chứa được số lớn 1e24
-    money.Name = "Money"
+local localPlayer = game:GetService("Players").LocalPlayer
+local leaderstats = localPlayer:WaitForChild("leaderstats", 5) -- Tìm bảng điểm
+
+if leaderstats then
+    -- Tìm loại tiền trong bảng điểm
+    -- Hãy đổi chữ "Cash" thành tên loại tiền chính xác của game cậu đang chơi nhé
+    local moneyValue = leaderstats:FindFirstChild("Cash") or leaderstats:FindFirstChild("Money")
     
-    -- Cộng tiền thật trên Server (chỉ có tác dụng trong game do bạn làm chủ)
-    money.Value = 1e24
-    money.Parent = leaderstats
-end)
+    if moneyValue then
+        -- Buff con số lên 1 tỷ tỷ tỷ tỷ (10^24)
+        moneyValue.Value = 1000000000000000000000000 
+        print("Đã buff tiền thành công! Nhìn giàu chưa kìa?")
+    else
+        print("Không tìm thấy tên loại tiền phù hợp. Hãy kiểm tra lại tên biến!")
+    end
+else
+    print("Không tìm thấy bảng leaderstats của người chơi.")
+end
