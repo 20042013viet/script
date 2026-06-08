@@ -1,0 +1,35 @@
+local LogService = game:GetService("LogService")
+local GuiService = game:GetService("GuiService")
+
+-- Cách 1: Chặn và ẩn hoàn toàn bảng hiển thị log DevConsole nếu nó tự bật
+task.spawn(function()
+    while task.wait(0.5) do
+        local coreGui = game:GetService("CoreGui")
+        local devConsole = coreGui:FindFirstChild("DevConsoleMaster")
+        if devConsole then
+            devConsole.Enabled = false -- Buộc ẩn bảng console nếu lỗi tràn ra từ đây
+        end
+    end
+end)
+
+-- Cách 2: Quét trên diện rộng tất cả các phân vùng UI (Bao gồm cả CoreGui nếu executor hỗ trợ)
+local function cleanTrashText(root)
+    pcall(function()
+        for _, v in pairs(root:GetDescendants()) do
+            if v:IsA("TextLabel") or v:IsA("TextBox") or v:IsA("TextButton") then
+                if string.find(v.Text, "Ad not") or string.find(v.Text, "Ineligible") or string.find(v.Text, "Enum") then
+                    v.Visible = false -- Ẩn hoàn toàn textlabel đó đi
+                    v.Text = ""       -- Xóa nội dung chữ
+                end
+            end
+        end
+    end)
+end
+
+-- Vòng lặp liên tục dọn rác màn hình
+task.spawn(function()
+    while task.wait(0.2) do
+        cleanTrashText(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+        cleanTrashText(game:GetService("CoreGui")) -- Cần executor có quyền tiếp cận CoreGui
+    end
+end)
