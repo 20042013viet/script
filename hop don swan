@@ -1,26 +1,26 @@
--- SCRIPT THỬ NGHIỆM BUFFER/SPAM TIỀN QUA REMOTE EVENT
--- Lưu ý: Cậu cần phải biết chính xác tên của RemoteEvent kiếm tiền trong game đó.
+-- Script Auto Win / Farm Cúp
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- 1. Tìm nơi chứa các lệnh gửi lên Server (Thường nằm trong ReplicatedStorage)
--- Cậu hãy đổi chữ "AddMoneyEvent" thành tên cái RemoteEvent có trong game cậu chơi
-local moneyEvent = ReplicatedStorage:FindFirstChild("AddMoneyEvent") 
-                or ReplicatedStorage:FindFirstChild("RewardEvent")
-                or ReplicatedStorage:FindFirstChild("ClickEvent")
-
-if moneyEvent and moneyEvent:IsA("RemoteEvent") then
-    print("Đã tìm thấy cổng gửi lệnh! Đang tiến hành spam lấy tiền thật...")
-    
-    -- Vòng lặp spam lệnh 100 lần để nhận tiền liên tục
-    for i = 1, 100 do
-        -- Gửi lệnh lên Server. 
-        -- Có game chỉ cần gọi (), có game cần điền số tiền ví dụ: (1000000)
-        moneyEvent:FireServer(1000000) 
-        task.wait(0.1) -- Nghỉ 0.1 giây mỗi lần tránh bị game phát hiện kích văng
+-- Tìm vị trí của Cúp (Wins) hoặc Vạch đích trong Workspace
+-- Lưu ý: Tên của vùng nhận cúp có thể thay đổi tùy theo cách đặt tên của Dev game
+local function getGoal()
+    for _, v in pairs(workspace:GetDescendants()) do
+        -- Tìm các object có tên liên quan đến Win, Cup, Goal, hoặc Finish
+        if v:IsA("BasePart") and (string.find(v.Name:lower(), "win") or string.find(v.Name:lower(), "cup") or string.find(v.Name:lower(), "finish")) then
+            return v
+        end
     end
-    
-    print("Đã chạy xong script. Hãy kiểm tra xem tiền có tiêu được không!")
-else
-    print("Không tìm thấy RemoteEvent phù hợp. Script không thể hoạt động trên game này.")
+    return nil
 end
+
+task.spawn(function()
+    while task.wait(0.1) do
+        local goal = getGoal()
+        if goal and character and rootPart then
+            -- Dịch chuyển nhân vật đến ngay vị trí cúp/vạch đích
+            rootPart.CFrame = goal.CFrame + Vector3.new(0, 2, 0)
+        end
+    end
+end)
