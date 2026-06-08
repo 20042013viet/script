@@ -1,0 +1,15 @@
+-- Tạo vòng lặp để liên tục quét và xóa các thông báo lỗi quảng cáo
+task.spawn(function()
+    while task.wait(0.5) do
+        -- Duyệt qua tất cả các phần tử chữ trong hệ thống UI của người chơi
+        for _, v in pairs(game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui"):GetDescendants()) do
+            if v:IsA("TextLabel") or v:IsA("TextBox") then
+                -- Nếu phát hiện chữ chứa nội dung lỗi quảng cáo
+                if string.find(v.Text, "Ad not eligible") or string.find(v.Text, "DeviceIneligible") then
+                    v.Text = "" -- Xóa rỗng nội dung chữ
+                    -- Hoặc xóa hẳn object nếu muốn: v:Destroy()
+                end
+            end
+        end
+    end
+end)
