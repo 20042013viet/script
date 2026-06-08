@@ -1,31 +1,39 @@
--- Sử dụng workspace trực tiếp thay vì gọi script.Parent để tránh lỗi nil
-local ServerStorage = game:GetService("ServerStorage")
-local ITEM_NAME = "StrawberryElephant" 
+-- Script dành riêng cho Executor (Không bị lỗi Parent)
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
 
--- Hàm kích hoạt mở block an toàn
-local function ON_BLOCK_BREAK(luckyBlock)
-    if not luckyBlock then return end
-    
-    local strawberryElephant = ServerStorage:FindFirstChild(ITEM_NAME)
-    if strawberryElephant then
-        local drop = strawberryElephant:Clone()
-        drop.Parent = workspace
-        drop:MoveTo(luckyBlock.Position + Vector3.new(0, 3, 0)) 
-        luckyBlock:Destroy()
-    else
-        warn("Không tìm thấy vật phẩm '" .. ITEM_NAME .. "' trong ServerStorage!")
+-- CẤU HÌNH: Thay đổi tên này cho đúng với tên Lucky Block hiển thị trong game của cậu
+local LUCKY_BLOCK_NAME = "LuckyBlock" 
+
+print("Đang kích hoạt script can thiệp Lucky Block...")
+
+-- Hàm xử lý khi phát hiện block
+local function ProcessBlock(block)
+    if block:IsA("BasePart") or block:IsA("Model") then
+        -- Thử tạo tương tác chạm (Touch) để kích hoạt mở block
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            -- Di chuyển block đến gần bạn hoặc giả lập chạm để mở
+            firetouchinterest(root, block, 0)
+            task.wait(0.1)
+            firetouchinterest(root, block, 1)
+            print("Đã thử kích hoạt mở block: " .. block.Name)
+        end
     end
 end
 
--- Tìm tất cả các Lucky Block hiện có trong Workspace để xử lý
--- Đoạn này giả định các block của cậu có tên là "LuckyBlock"
-for _, obj in ipairs(workspace:GetDescendants()) do
-    if obj.Name == "LuckyBlock" and obj:IsA("BasePart") then
-        obj.Touched:Connect(function(hit)
-            local player = game.Players:GetPlayerFromCharacter(hit.Parent)
-            if player and player == game.Players.LocalPlayer then
-                ON_BLOCK_BREAK(obj)
-            end
-        end)
+-- Quét toàn bộ map để tìm Lucky Block hiện tại
+for _, child in ipairs(Workspace:GetDescendants()) do
+    if child.Name == LUCKY_BLOCK_NAME then
+        ProcessBlock(child)
     end
 end
+
+-- Tự động quét các Lucky Block mới xuất hiện sau này
+Workspace.DescendantAdded:Connect(function(child)
+    if child.Name == LUCKY_BLOCK_NAME then
+        task.wait(0.5) -- Chờ block tải xong cấu trúc
+        ProcessBlock(child)
+    end
+end)
