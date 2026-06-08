@@ -1,32 +1,31 @@
--- Script đặt trong Lucky Block (Roblox Studio)
-local luckyBlock = script.Parent
+-- Sử dụng workspace trực tiếp thay vì gọi script.Parent để tránh lỗi nil
 local ServerStorage = game:GetService("ServerStorage")
-
--- Thay đổi tên này chính xác với tên của Model/Tool Strawberry Elephant trong game của bạn
 local ITEM_NAME = "StrawberryElephant" 
 
-local function ON_BLOCK_BREAK()
-    -- Kiểm tra xem vật phẩm có tồn tại trong ServerStorage không
-    local strawberryElephant = ServerStorage:FindFirstChild(ITEM_NAME)
+-- Hàm kích hoạt mở block an toàn
+local function ON_BLOCK_BREAK(luckyBlock)
+    if not luckyBlock then return end
     
+    local strawberryElephant = ServerStorage:FindFirstChild(ITEM_NAME)
     if strawberryElephant then
-        -- Nhân bản vật phẩm
         local drop = strawberryElephant:Clone()
         drop.Parent = workspace
-        -- Đặt vị trí rơi ra ngay tại Lucky Block
         drop:MoveTo(luckyBlock.Position + Vector3.new(0, 3, 0)) 
-        
-        -- Xóa Lucky Block sau khi vỡ
         luckyBlock:Destroy()
     else
         warn("Không tìm thấy vật phẩm '" .. ITEM_NAME .. "' trong ServerStorage!")
     end
 end
 
--- Kích hoạt khi có ai đó chạm vào (hoặc bạn có thể đổi thành sự kiện phá block tùy ý)
-luckyBlock.Touched:Connect(function(hit)
-    local player = game.Players:GetPlayerFromCharacter(hit.Parent)
-    if player then
-        ON_BLOCK_BREAK()
+-- Tìm tất cả các Lucky Block hiện có trong Workspace để xử lý
+-- Đoạn này giả định các block của cậu có tên là "LuckyBlock"
+for _, obj in ipairs(workspace:GetDescendants()) do
+    if obj.Name == "LuckyBlock" and obj:IsA("BasePart") then
+        obj.Touched:Connect(function(hit)
+            local player = game.Players:GetPlayerFromCharacter(hit.Parent)
+            if player and player == game.Players.LocalPlayer then
+                ON_BLOCK_BREAK(obj)
+            end
+        end)
     end
-end)
+end
